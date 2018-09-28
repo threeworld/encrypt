@@ -248,7 +248,7 @@ class des():
 
 if __name__ == '__main__':
     key = 'password'
-    text = 'Hello w中国o'
+    text = 'test'
     d = des()
     r = d.encrypt(key, text)
     print('%r'% r)
