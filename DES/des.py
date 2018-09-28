@@ -116,7 +116,7 @@ DECRYPT = 0
 def string_to_bit_array(text):
     array = list()
     for char in text:
-        binval = binvalue(char, 8) #得到字符的二进制位
+        binval = binvalue(char, 16) #得到字符的二进制位
         array.extend([int(x) for x in list(binval)])
     return array
 
@@ -134,7 +134,7 @@ def binvalue(val, bitsize):
 
 #位数组重新生成字符串
 def bit_array_to_string(array):
-    res = ''.join([chr(int(y, 2)) for y in [''.join([str(x) for x in byte]) for byte in  nsplit(array,8)]])
+    res = ''.join([chr(int(y, 2)) for y in [''.join([str(x) for x in byte]) for byte in  nsplit(array,16)]])
     return res
 
 #将列表拆分为长度为n的子序列
@@ -148,24 +148,21 @@ class des():
         self.text = None
         self.keys = list()
     
-    def run(self, key, text, action = ENCRYPT, padding = False):
+    def run(self, key, text, action = ENCRYPT, padding = True):
         if len(key) < 8:
             raise 'Key Should be 8 bytes long'
         elif len(key) > 8:
             key = key[ :8] #如果key大于8个字符，取前面8个字符
         
-        self.password = key
-        self.text = text
+        self.password = key  #密钥
+        self.text = text     #明文
 
         if padding and action == ENCRYPT:
             self.addPadding()
-        #如果明文不是8的倍数而且padding = False
-        elif len(self.text) % 8 != 0:
-            raise 'data size should be multiple of 8'
         
         #生成是所有的字密钥
         self.generatekeys()
-        text_blocks = nsplit(self.text, 8)
+        text_blocks = nsplit(self.text, 4)
         result = list()
         for block in text_blocks:
             block = string_to_bit_array(block) #生成64位二进制位列表
@@ -242,16 +239,16 @@ class des():
         return data[:-pad_len]
     
     #加密函数
-    def encrypt(self, key, text, padding=False):
+    def encrypt(self, key, text, padding=True):
         return self.run(key, text, ENCRYPT, padding)
     
     #解密函数
-    def decrypt(self, key, text, padding=False):
+    def decrypt(self, key, text, padding=True):
         return self.run(key, text, DECRYPT, padding)
 
 if __name__ == '__main__':
     key = 'password'
-    text = 'Hello wo'
+    text = 'Hello w中国o'
     d = des()
     r = d.encrypt(key, text)
     print('%r'% r)
