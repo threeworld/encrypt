@@ -95,7 +95,7 @@ def random_prime(halfkeylength):
         if n % 2 != 0:
             found = True
             #随机性测试
-            for i in range(0, 10):
+            for i in range(0, 5):
                 if prime_test(n) == 'composite':
                     found = False
                     break
