@@ -1,5 +1,7 @@
 # -*- coding:utf-8 -*-
 
+import base64
+
 #初始化IP
 PI = [58, 50, 42, 34, 26, 18, 10, 2,
       60, 52, 44, 36, 28, 20, 12, 4,
@@ -250,6 +252,6 @@ if __name__ == '__main__':
     key = 'password'
     text = 'test'
     d = des()
-    r = d.encrypt(key, text)
-    print('%r'% r)
-    print(d.decrypt(key, r))
+    r = d.encrypt(key, text).encode()
+    print('%r'% base64.b64encode(r))
+    print(d.decrypt(key, r.decode()))
