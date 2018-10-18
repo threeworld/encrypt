@@ -134,6 +134,10 @@ class AES:
                 row = a >> 4
                 column = a & 0x0f
                 matrix[i][j] = SBox[row][column]
+    
+    #逆S盒变换
+    def inv_byteSub(self, matrix):
+        pass
 
     #行移位变换
     def shiftRow(self, matrix):
@@ -145,8 +149,12 @@ class AES:
                 result[j].append(tmp)
         self.state = result
 
+    #逆行移位
+    def inv_shiftRow(self, matrix):
+        pass    
+
     #列混合变换
-    def mixCloumn(self, matrix):
+    def mixColumn(self, matrix):
         mul_by_2 = gf_mul_by_02
         mul_by_3 = gf_mul_by_03
         j = 0
@@ -159,6 +167,10 @@ class AES:
 
         self.state = matrix
 
+    #逆列混合变换
+    def inv_mixColumn(self, matrix):
+        pass
+    
     #轮秘钥加变换
     def addRoundKey(self, state_matrix, key_matrix):
         for i in range(4):
@@ -181,10 +193,10 @@ class AES:
             self.shiftRow(self.state)
             print('   After shiftRow: %s \n' % hex(matrix_to_text(self.state))[2:])
             if i != 40:
-                self.mixCloumn(self.state)
+                self.mixColumn(self.state)
             else:
                 pass
-            print('  After mixCloumn: %s \n' % hex(matrix_to_text(self.state))[2:])
+            print('  After mixColumn: %s \n' % hex(matrix_to_text(self.state))[2:])
             self.addRoundKey(self.state, self.round_keys[i:i+4])
             print('        round_key: %s \n' % hex(matrix_to_text(self.round_keys[i:i+4]))[2:])
             print('After addRoundKey: %s \n' % hex(matrix_to_text(self.state))[2:])
