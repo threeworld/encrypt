@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*- 
 
+from array import array
+
 #轮秘钥生成使用的RC表
 Rcon = [
     0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40,
@@ -46,13 +48,35 @@ InvSBox = [
     [0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26, 0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D,],
 ]
 
-# x乘函数
-def xtime(a):
-    #最高位为1
-    if a & 0x80 :
-        return ((a << 1) ^ 0x1B) & 0xff
-    else:
-        return a << 1
+#shift Table
+shiftTable = [
+    [0, 1, 2, 3],
+    [1, 2, 3, 0],
+    [2, 3, 0, 1],
+    [3, 0, 1, 2],
+]
+
+# 有限域GF(2^8)定义的乘法
+def gf_multi(a, b):
+    p = 0
+    while b:
+        if b & 0x01:
+            p ^= a
+        a <<= 1
+        if a & 0x100:
+            a ^= 0x1b
+        b >>= 1
+    return p & 0xff
+
+#encrypt 列混合使用的表
+gf_mul_by_02 = array('B', [gf_multi(x, 2) for x in range(256)])
+gf_mul_by_03 = array('B', [gf_multi(x, 3) for x in range(256)])
+
+#decrypt 列混合使用的表
+gf_mul_by_09 = array('B', [gf_multi(x, 9) for x in range(256)])
+gf_mul_by_0b = array('B', [gf_multi(x, 11) for x in range(256)])
+gf_mul_by_0d = array('B', [gf_multi(x, 13) for x in range(256)])
+gf_mul_by_0e = array('B', [gf_multi(x, 14) for x in range(256)])
 
 #将明文text转换成矩阵
 def text_to_matrix(text):
@@ -78,36 +102,102 @@ class AES:
     #初始化化秘钥
     def __init__(self, cipher_key):
         self.cipher_key = cipher_key
-    
+        self.keyExpansion(self.cipher_key)
+
     #轮秘钥生成
-    def key_expansion(self, cipher_key):
+    def keyExpansion(self, cipher_key):
         self.round_keys = text_to_matrix(cipher_key)
         #生成10个轮秘钥
-        for i in range(4, 6):
+        for i in range(4, 4 * 11):
             self.round_keys.append([])
             if i % 4 == 0:
                 tmp = self.round_keys[i-1][1:]+self.round_keys[i-1][:1]
-                print(tmp)
-                row = tmp[0] >> 4
-                column = tmp[0] & 0x0f
-                byte = self.round_keys[i-4][0] ^ SBox[row][column] ^ Rcon[i // 4]
-                self.round_keys[i].append(byte)
-
-                for j in range(1, 4):
+                for j in range(4):
                     row = tmp[j] >> 4
                     column = tmp[j] & 0x0f
-                    byte = self.round_keys[i-4][j] ^ SBox[row][column]
-                    print(byte)
-                    self.round_keys[i].append(byte)
-                print(self.round_keys)
+                    if j == 0:
+                        byte = self.round_keys[i-4][0] ^ SBox[row][column] ^ Rcon[i // 4]
+                        self.round_keys[i].append(byte)
+                    else:
+                        byte = self.round_keys[i-4][j] ^ SBox[row][column]
+                        self.round_keys[i].append(byte)
             else:
                 for j in range(4):
                     byte = self.round_keys[i - 4][j] ^ self.round_keys[i - 1][j]
                     self.round_keys[i].append(byte)
-                print(self.round_keys)
 
+    #S盒变换
+    def byteSub(self, matrix):
+        for i in range(4):
+            for j in range(4):
+                a = matrix[i][j]
+                row = a >> 4
+                column = a & 0x0f
+                matrix[i][j] = SBox[row][column]
 
-key = 0x2b7e151628aed2a6abf7158809cf4f3c
-print(text_to_matrix(key))
-aes = AES(key)
-aes.key_expansion(aes.cipher_key)
+    #行移位变换
+    def shiftRow(self, matrix):
+        result = []
+        for j in range(4):
+            result.append([])
+            for i in range(4):
+                tmp = matrix[shiftTable[j][i]][i]
+                result[j].append(tmp)
+        self.state = result
+
+    #列混合变换
+    def mixCloumn(self, matrix):
+        mul_by_2 = gf_mul_by_02
+        mul_by_3 = gf_mul_by_03
+        j = 0
+        for i in range(4):
+            v0, v1, v2, v3 = matrix[i]
+            matrix[i][j] = mul_by_2[v0] ^ mul_by_3[v1] ^ v2 ^v3
+            matrix[i][j+1] = v0 ^ mul_by_2[v1] ^ mul_by_3[v2] ^ v3
+            matrix[i][j+2] = v0 ^ v1 ^ mul_by_2[v2] ^ mul_by_3[v3]
+            matrix[i][j+3] = mul_by_3[v0] ^ v1 ^ v2 ^ mul_by_2[v3]
+
+        self.state = matrix
+
+    #轮秘钥加变换
+    def addRoundKey(self, state_matrix, key_matrix):
+        for i in range(4):
+            for j in range(4):
+                state_matrix[i][j] ^= key_matrix[i][j]
+        return state_matrix
+    
+    #加密函数
+    def encrypt(self, text):
+        
+        #轮秘钥加
+        matrix = text_to_matrix(text)
+        self.state = self.addRoundKey(matrix, self.round_keys[:4])
+
+        #轮函数
+        for i in range(4, 44, 4):
+            print('N = %s' % (i // 4))
+            self.byteSub(self.state)
+            print('    After byteSub: %s \n'% hex(matrix_to_text(self.state))[2:])
+            self.shiftRow(self.state)
+            print('   After shiftRow: %s \n' % hex(matrix_to_text(self.state))[2:])
+            if i != 40:
+                self.mixCloumn(self.state)
+            else:
+                pass
+            print('  After mixCloumn: %s \n' % hex(matrix_to_text(self.state))[2:])
+            self.addRoundKey(self.state, self.round_keys[i:i+4])
+            print('        round_key: %s \n' % hex(matrix_to_text(self.round_keys[i:i+4]))[2:])
+            print('After addRoundKey: %s \n' % hex(matrix_to_text(self.state))[2:])
+        
+        return hex(matrix_to_text(self.state))
+
+    #解密函数
+    def decrypt(self, text):
+        pass
+
+if __name__ == '__main__':
+
+    key = 0x2b7e151628aed2a6abf7158809cf4f3c
+    text = 0x3243f6a8885a308d313198a2e0370734
+    aes = AES(key)
+    print(aes.encrypt(text))
