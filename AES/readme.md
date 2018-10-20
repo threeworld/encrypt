@@ -312,3 +312,242 @@ round_key: 589702d129969a7ff3ef8d6b93fab8ff
 本次使用的函数和初始轮密钥加为同一函数，只是密钥不同。
 
 至此，第一轮加密完成，剩下的九轮顺序一样，只是使用的密钥不同，需要注意的是，最后一轮不使用列混淆。
+
+## 五、加密结果
+
+```python
+#####################  encryption  #####################
+
+key = 0x00012001710198aeda79171460153594
+plaintext = 0x0001000101a198afda78173486153566
+
+N = 1
+    After byteSub: 6363b76351e0637c637c63b78e636389
+
+   After shiftRow: 63e06389517c63636363b77c8e6363b7
+
+  After mixColumn: 1794c52f266f4e2aa81bf189765ae9fc
+
+        round_key: 589702d129969a7ff3ef8d6b93fab8ff
+
+After addRoundKey: 4f03c7fe0ff9d4555bf47ce2e5a05103
+
+N = 2
+    After byteSub: 847bc6bb769948fc39bf1098d9e0d17b
+
+   After shiftRow: 8499107b76bfd1bb39e0c6fcd97b4898
+
+  After mixColumn: c8e6b0e85cc0a699734f518ef46f8168
+
+        round_key: 77fb140d5e6d8e72ad8203193e78bbe6
+
+After addRoundKey: bf1da4e502ad28ebdecd5297ca173a8e
+
+N = 3
+    After byteSub: 8a449d9779534e91dbd008874f08019
+
+   After shiftRow: 895001977bd80d91df049e974a43488
+
+  After mixColumn: ad20b6bf6b54a10d91d45f57a3f33b07
+
+        round_key: cf119abf917c14cd3cfe17d40286ac32
+
+After addRoundKey: 62312c00fa28b5c0ad2a4883a1759735
+
+N = 4
+    After byteSub: aac771632d34d5ba95e552ec329d8896
+
+   After shiftRow: aa3452962de58863959d71ba32c7d5ec
+
+  After mixColumn: d7a29bb4851c66dc469d3f270f2f6b87
+
+        round_key: 8380b9c812fcad052e02bad12c8416e3
+
+After addRoundKey: 5422227c97e0cbd9689f85f623ab7d64
+
+N = 5
+    After byteSub: 2093931088e11f3545db97422662ff43
+
+   After shiftRow: 20e1974388dbff104562933526931f42
+
+  After mixColumn: ac183190922f86878a1a4554bf784d62
+
+        round_key: ccc7a8b9de3b05bcf039bf6ddcbda98e
+
+After addRoundKey: 60df99294c14833b7a23fa3963c5e4ec
+
+N = 6
+    After byteSub: d09eeea529faece2da262d12fba669ce
+
+   After shiftRow: d0fa2dce292669a5daa6eee2fb9eec12
+
+  After mixColumn: 4d86393bf47b2965524686e2aae19040
+
+        round_key: 9614b13f482fb483b8160bee64aba260
+
+After addRoundKey: db928804bc549de6ea508d0cce4a3220
+
+N = 7
+    After byteSub: b94fc4f265205e8e87535dfe8bd623b7
+
+   After shiftRow: b9205db7655323f287d6c48e8b4f5efe
+
+  After mixColumn: e3a9e1d8ee547d203ee94b877c096170
+
+        round_key: b42e617cfc01d5ff4417de1120bc7c71
+
+After addRoundKey: 578780a41255a8df7afe95965cb51d01
+
+N = 8
+    After byteSub: 5b17cd49c9fcc29edabb2a904ad5a47c
+
+   After shiftRow: 5bfc2a7cc9bba449dad5cd9e4a17c290
+
+  After mixColumn: ffba77c3b21afacd98b9374affa96930
+
+        round_key: 513ec2cbad3f1734e928c925c994b554
+
+After addRoundKey: ae84b5081f25edf97191fe6f363ddc64
+
+N = 9
+    After byteSub: e45fd530c03f5599a381bba805278643
+
+   After shiftRow: e43fbb43c0818630a327d599055f55a8
+
+  After mixColumn: 6a0f7335b578063c7810852516ec134e
+
+        round_key: 68ebe216c5d4f5222cfc3c07e5688953
+
+After addRoundKey: 2e4912370acf31e54ecb922f3849a1d
+
+N = 10
+    After byteSub: 7769812651910d7220ce56930d5fb8a4
+
+   After shiftRow: 779156a451ceb826205f81720d690d93
+
+  After mixColumn: 779156a451ceb826205f81720d690d93
+
+        round_key: 1b4c0fcfde98faedf264c6ea170c4fb9
+
+After addRoundKey: 6cdd596b8f5642cbd23b47981a65422a
+```
+
+## 六、解密结果
+
+```python
+#####################  decryption  #####################
+
+key = 0x00012001710198aeda79171460153594
+ciphertext = 0x6cdd596b8f5642cbd23b47981a65422a
+
+N = 10
+  After inv_byteSub: 2acb91d70ec9a235484911ef3e4f322
+
+ After inv_shiftRow: 2e4912370acf31e54ecb922f3849a1d
+
+After inv_mixColumn: 6dfd56924b4eaa9e86732dfb93db01b9
+
+          round_key: 89c2edd18bcf2cae2554f86296845411
+
+  After addRoundKey: e43fbb43c0818630a327d599055f55a8
+
+N = 9
+  After inv_byteSub: ae25fe641f91dc08713db5f93684ed6f
+
+ After inv_shiftRow: ae84b5081f25edf97191fe6f363ddc64
+
+After inv_mixColumn: d5a3fb1acbb66536744e1952f9c76ee3
+
+          round_key: 8e5fd166020dc17fae9bd4ccb3d0ac73
+
+  After addRoundKey: 5bfc2a7cc9bba449dad5cd9e4a17c290
+
+N = 8
+  After inv_byteSub: 5755950112fe1da47ab580df5c87a896
+
+ After inv_shiftRow: 578780a41255a8df7afe95965cb51d01
+
+After inv_mixColumn: 8810acc0e90133eb2b40d13d96042641
+
+          round_key: 3130f1778c521019ac9615b31d4b78bf
+
+  After addRoundKey: b9205db7655323f287d6c48e8b4f5efe
+
+N = 7
+  After inv_byteSub: db548d20bc503204ea4a88e6ce929d0c
+
+ After inv_shiftRow: db928804bc549de6ea508d0cce4a3220
+
+After inv_mixColumn: a97f6b78944488cbfa62eb484a43811e
+
+          round_key: 798546b6bd62e16e20c405aab1dd6d0c
+
+  After addRoundKey: d0fa2dce292669a5daa6eee2fb9eec12
+
+N = 6
+  After inv_byteSub: 6014faec4c23e4297ac5993b63df8339
+
+ After inv_shiftRow: 60df99294c14833b7a23fa3963c5e4ec
+
+After inv_mixColumn: bbd15c394c3c58c8d8c477f1b78a77e4
+
+          round_key: 9b30cb7ac4e7a7d89da6e4c4911968a6
+
+  After addRoundKey: 20e1974388dbff104562933526931f42
+
+N = 5
+  After inv_byteSub: 54e08564979f7d7c68ab22d92322cbf6
+
+ After inv_shiftRow: 5422227c97e0cbd9689f85f623ab7d64
+
+After inv_mixColumn: 8322e3c7232e4c1ccdc32a63e78598e
+
+          round_key: a2067caa5fd76ca25941431c0cbf8c62
+
+  After addRoundKey: aa3452962de58863959d71ba32c7d5ec
+
+N = 4
+  After inv_byteSub: 62284835fa2a9700ad752cc0a131b583
+
+ After inv_shiftRow: 62312c00fa28b5c0ad2a4883a1759735
+
+After inv_mixColumn: 4d65fdaa8a6c90d11b666657215afbf6
+
+          round_key: 45f0fdb3fdd1100806962fbe55fecf7e
+
+  After addRoundKey: 895001977bd80d91df049e974a43488
+
+N = 3
+  After inv_byteSub: bfad528e02cd3ae5de17a4ebca1d2897
+
+ After inv_shiftRow: bf1da4e502ad28ebdecd5297ca173a8e
+
+After inv_mixColumn: 3603f026ce9e3c00c2a7f94a8a13a858
+
+          round_key: b29ae05db821edbbfb473fb65368e0c0
+
+  After addRoundKey: 8499107b76bfd1bb39e0c6fcd97b4898
+
+N = 2
+  After inv_byteSub: 4ff97c030ff451fe5ba0c755e503d4e2
+
+ After inv_shiftRow: 4f03c7fe0ff9d4555bf47ce2e5a05103
+
+After inv_mixColumn: 31b953ae5bc76e8520056571264cbcc1
+
+          round_key: 525930270abb0de64366d20da82fdf76
+
+  After addRoundKey: 63e06389517c63636363b77c8e6363b7
+
+N = 1
+  After inv_byteSub: a000f27001000000002001e6000020
+
+ After inv_shiftRow: 200070a0000100010020e60000f2
+
+After inv_mixColumn: 200070a0000100010020e60000f2
+
+          round_key: 12001710198aeda79171460153594
+
+  After addRoundKey: 1000101a198afda78173486153566
+```
+
