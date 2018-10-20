@@ -234,7 +234,7 @@ def addRoundKey(self, state_matrix, key_matrix):
         return state_matrix
 ```
 
-### 2.字节替代
+### 2. 字节替代
 
 ```
     input: 0000200070a0000100010020e60000f2
@@ -255,5 +255,60 @@ round_key: 589702d129969a7ff3ef8d6b93fab8ff
                 matrix[i][j] = SBox[row][column]
 ```
 
+### 3. 行移位
 
+```
+    input: 6363b76351e0637c637c63b78e636389
+round_key: 589702d129969a7ff3ef8d6b93fab8ff
+   output: 63e06389517c63636363b77c8e6363b7
+```
 
+代码：
+
+```python
+#行移位变换
+def shiftRow(self, matrix):
+        result = []
+        for j in range(4):
+            result.append([])
+            for i in range(4):
+                tmp = matrix[shiftTable[j][i]][i]
+                result[j].append(tmp)
+        self.state = result
+```
+
+### 4. 列混淆
+
+```
+    input: 63e06389517c63636363b77c8e6363b7
+round_key: 589702d129969a7ff3ef8d6b93fab8ff
+   output: 1794c52f266f4e2aa81bf189765ae9fc
+```
+
+代码：
+
+```python
+#列混合变换
+def mixColumn(self, matrix):
+    mul_by_2 = gf_mul_by_02
+    mul_by_3 = gf_mul_by_03
+    j = 0
+    for i in range(4):
+        v0, v1, v2, v3 = matrix[i]
+        matrix[i][j] = mul_by_2[v0] ^ mul_by_3[v1] ^ v2 ^v3
+        matrix[i][j+1] = v0 ^ mul_by_2[v1] ^ mul_by_3[v2] ^ v3
+        matrix[i][j+2] = v0 ^ v1 ^ mul_by_2[v2] ^ mul_by_3[v3]
+        matrix[i][j+3] = mul_by_3[v0] ^ v1 ^ v2 ^ mul_by_2[v3]
+```
+
+### 5. 轮密钥加
+
+```
+    input: 1794c52f266f4e2aa81bf189765ae9fc
+round_key: 589702d129969a7ff3ef8d6b93fab8ff
+   output: 63e06389517c63636363b77c8e6363b7
+```
+
+本次使用的函数和初始轮密钥加为同一函数，只是密钥不同。
+
+至此，第一轮加密完成，剩下的九轮顺序一样，只是使用的密钥不同，需要注意的是，最后一轮不使用列混淆。
