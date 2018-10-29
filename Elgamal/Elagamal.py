@@ -23,8 +23,22 @@ class PublicKey:
 
 #求模p的原根
 def find_primitive_root(p):
+    if p == 2:
+        return 1
+    p1 = 2
+    p2 = (p - 1) // p1
+
+    while True:
+        g = random.randint(2, p-1)
+        if not mod_exp(g, p2, p) == 1:
+            if not mod_exp(g, (p-1)//p2, p) == 1:
+                return g    
+
+#寻找素数
+def find_prime(iNumbits):
     pass
 
+    
 #模指运算
 def mod_exp(base, exp, modulus):
     return pow(base, exp, modulus)
