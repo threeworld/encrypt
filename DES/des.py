@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-import base64
+import base64, random,sys, time
 
 #初始化IP
 PI = [58, 50, 42, 34, 26, 18, 10, 2,
@@ -113,7 +113,9 @@ SHIFT = [1,1,2,2,2,2,2,2,1,2,2,2,2,2,2,1]
 
 ENCRYPT = 1
 DECRYPT = 0
-
+"""
+task 1
+"""
 #计算给定对应差分计算输入对
 def diff_pair(pair):
     value = 0
@@ -166,6 +168,98 @@ def substitute(data, S_BOX_I):
     bin = binvalue(val,4)  #输入到列表
     return bin
 
+#输入输出差分统计主函数
+def io_diff_main(diffpair):
+    #eg: diffpair = 0b000001
+    diff_pair_list = diff_pair(diffpair)
+    result = out_diff(diff_pair_list)
+    print_message(diffpair, diff_pair_list,result)
+
+"""
+task 2
+"""
+#对arr数组改变n位
+def change_arr_number(arr, n):
+    flag = []
+    res = []
+    for i in range(64):
+        flag.append(False)
+        res.append(arr[i])
+    while n > 0:
+        id = random.randint(0, 63)
+        if flag[id] == False:
+            flag[id] = True
+            res[id] = res[id] ^ 1
+            n = n-1
+    return res
+
+#改变明文
+def change_arr():
+    arr = []
+    for i in range(64):
+        arr.append(random.randint(0, 1)) 
+    return arr
+
+#查找两个数组不同的位数
+def find_diff(arr1, arr2):
+    count = 0
+    for i in range(64):
+        if arr1[i] != arr2[i]:
+            count+=1
+    return count
+
+#明文改变1...64位，统计密文输出改变位数主函数
+def text_change_statist(arr_text, arr_key):
+    des = DES()
+    arr1 = des.stat_run(arr_key, arr_text, ENCRYPT)
+    print('明文改变位数\t\t输出密文平均改变的位数')
+    for i in range(1, 65):
+        count = 0
+        for j in range(100):
+            res = change_arr_number(arr_text, i)
+            arr2 = des.stat_run(arr_key, res, ENCRYPT)
+            count += find_diff(arr1, arr2)
+        print(str(i)+ '\t\t\t'+ str((count/100)))
+        
+
+#测试主函数
+def text_statist_main():
+    arr_key = change_arr()
+    for i in range(1):
+        print('*'*10+' 第 ' + str((i+1)) + '次测试 '+'*'*10)
+        arr_text = change_arr()
+        text_change_statist(arr_text, arr_key)
+
+"""
+task 3
+"""
+#密钥改变n位，输出密文改变的位数
+def key_change_statist(arr_text, arr_key):
+    des = DES()
+    #密钥没改变时生成密文
+    arr1 = des.stat_run(arr_key, arr_text, ENCRYPT)
+    print('密钥改变位数\t\t输出密文平均改变的位数')
+    for i in range(1, 65):
+        count = 0
+        for j in range(100):
+            #密钥改变 i 位
+            arr_key = change_arr_number(arr_key, i)
+            #密钥改变时生成的密文
+            arr2 = des.stat_run(arr_key, arr_text, ENCRYPT)
+            count += find_diff(arr1, arr2)
+        print(str(i)+ '\t\t\t'+ str((count/100)))
+
+#测试主函数
+def key_statist_main():
+    arr_text = change_arr()
+    for i in range(1):
+        print('*'*10+' 第 ' + str((i+1)) + '次测试 '+'*'*10)
+        arr_key = change_arr()
+        key_change_statist(arr_text, arr_key)
+
+"""
+功能函数
+"""
 #将字符串转换为位列表
 def string_to_bit_array(text):
     array = list()
@@ -197,7 +291,7 @@ def nsplit(s, n):
     return [s[k:k+n] for k in range(0, len(s), n)]
     
 
-class des():
+class DES():
     
     def __init__(self):
         self.password = None
@@ -243,6 +337,39 @@ class des():
             return self.removePadding(final_res)
         else:
             return final_res
+    
+    #统计改变位数的加密函数
+    def stat_run(self, arr_key, arr_text, action = ENCRYPT, padding = False):
+        if len(arr_key) < 64:
+            raise 'Key Should be 8 bytes long'
+        elif len(arr_key) > 64:
+            key = arr_key[ :64] #如果key大于8个字符，取前面8个字符
+        
+        self.password = arr_key  #密钥
+        self.text = arr_text     #明文
+
+        if padding and action == ENCRYPT:
+            self.addPadding()
+
+        self.generatekeys_change(arr_key)
+
+        result = []
+        block = self.permut(arr_text, PI)
+        g, d = nsplit(block, 32)  #将明文分为左32位,右32位
+        tmp = None
+        for i in range(16):
+            d_e = self.expend(d, E)
+            if action == ENCRYPT:
+                tmp = self.xor(self.keys_change[i],d_e)
+            else:
+                tmp = self.xor(self.keys_change[15-i],d_e)
+            tmp = self.substitute(tmp) #sbox
+            tmp = self.permut(tmp, P)
+            tmp = self.xor(g, tmp)
+            g = d
+            d = tmp
+        result = self.permut(d+g, PI_1)
+        return result
 
     #置换选择函数
     def permut(self, block, table):
@@ -265,8 +392,17 @@ class des():
             g, d = self.shift(g, d, SHIFT[i])
             tmp = g + d
             self.keys.append(self.permut(tmp, CP_2))
-
-
+    
+    #改变n位数之后生成16个子密钥
+    def generatekeys_change(self, arr):
+        self.keys_change = []
+        key = self.permut(arr, CP_1)
+        g, d = nsplit(key, 28)
+        for i in range(16): #循环16次
+            g, d = self.shift(g, d, SHIFT[i])
+            tmp = g + d
+            self.keys_change.append(self.permut(tmp, CP_2))
+    
     #使用sbox代替函数
     def substitute(self, data):
         subblocks = nsplit(data, 6)
@@ -303,13 +439,8 @@ class des():
         return self.run(key, text, DECRYPT, padding)
 
 if __name__ == '__main__':
-    key = 'password'
-    text = 'test'
-    d = des()
-    #r = d.encrypt(key, text).encode()
-    #print('%r'% base64.b64encode(r))
-    #print(d.decrypt(key, r.decode()))
-    diffpair = 0b000001
-    diff_pair_list = diff_pair(diffpair)
-    result = out_diff(diff_pair_list)
-    print_message(diffpair, diff_pair_list,result)
+    text = 'testtest'
+    #text_statist_main()
+    key_statist_main()
+    #io_diff_main(0b000001)
+    
