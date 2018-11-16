@@ -114,6 +114,58 @@ SHIFT = [1,1,2,2,2,2,2,2,1,2,2,2,2,2,2,1]
 ENCRYPT = 1
 DECRYPT = 0
 
+#计算给定对应差分计算输入对
+def diff_pair(pair):
+    value = 0
+    diff_pair_list = []
+    for i in range(0,64):
+        xor_value = i ^ pair
+        bin_value_xor = binvalue(xor_value, 6)
+        bin_value_i = binvalue(i, 6)
+        diff_pair_list.append([bin_value_i, bin_value_xor])
+    return diff_pair_list
+
+#输出差分
+def out_diff(diff_pair_list):
+    out_xor_value = 0
+    diffpair_key = {}
+    for i in range(0, 64):
+        SB_1 = substitute(diff_pair_list[i][0], 0)
+        SB_2 = substitute(diff_pair_list[i][1], 0)
+        out_xor_value = int(SB_1, 2) ^ int(SB_2, 2)
+        bin_value = binvalue(out_xor_value, 4)
+        diffpair_key[str(diff_pair_list[i])] = bin_value
+    return diffpair_key
+
+#输出信息函数
+def print_message(diffpair, diff_pair_list, diffpair_key):
+    out_list = []
+    print('----------- 输入差分：'+ str(diffpair)+' -----------')
+    for i in range(64):
+        print('第'+ str(i+1)+ '对：'+ str(diff_pair_list[i]) + '\t输出查分：'+ diffpair_key[str(diff_pair_list[i])])
+    print('S1的输出差分\t\t可能输入的值')
+    for i in range(16):
+        stat_list = []
+        for j in range(64):
+            tmp = int(diffpair_key[str(diff_pair_list[j])], 2)
+            if tmp == i:
+                stat_list.append(diff_pair_list[j][0])
+                stat_list.append(diff_pair_list[j][1])
+        bin_i = binvalue(i, 4)
+        print(bin_i+'\t\t\t' + str(list(set(stat_list))))
+            
+
+#使用sbox替代函数
+def substitute(data, S_BOX_I):
+    array = list()
+    array.extend([int(x) for x in list(data)])
+    result = []
+    row = int(str(array[0])+str(array[5]),2) #行号
+    column = int(''.join([str(x) for x in array[1:][:-1]]), 2) #列号
+    val = S_BOX[S_BOX_I][row][column] #该位置的值
+    bin = binvalue(val,4)  #输入到列表
+    return bin
+
 #将字符串转换为位列表
 def string_to_bit_array(text):
     array = list()
@@ -141,7 +193,9 @@ def bit_array_to_string(array):
 
 #将列表拆分为长度为n的子序列
 def nsplit(s, n):
+    #print([s[k:k+n] for k in range(0, len(s), n)])
     return [s[k:k+n] for k in range(0, len(s), n)]
+    
 
 class des():
     
@@ -252,6 +306,10 @@ if __name__ == '__main__':
     key = 'password'
     text = 'test'
     d = des()
-    r = d.encrypt(key, text).encode()
-    print('%r'% base64.b64encode(r))
-    print(d.decrypt(key, r.decode()))
+    #r = d.encrypt(key, text).encode()
+    #print('%r'% base64.b64encode(r))
+    #print(d.decrypt(key, r.decode()))
+    diffpair = 0b000001
+    diff_pair_list = diff_pair(diffpair)
+    result = out_diff(diff_pair_list)
+    print_message(diffpair, diff_pair_list,result)
