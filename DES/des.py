@@ -142,7 +142,7 @@ def print_message(diffpair, diff_pair_list, diffpair_key):
     out_list = []
     print('----------- 输入差分：'+ str(diffpair)+' -----------')
     for i in range(64):
-        print('第'+ str(i+1)+ '对：'+ str(diff_pair_list[i]) + '\t输出查分：'+ diffpair_key[str(diff_pair_list[i])])
+        print('第'+ str(i+1)+ '对：'+ str(diff_pair_list[i]) + '\t输出差分：'+ diffpair_key[str(diff_pair_list[i])])
     print('S1的输出差分\t\t可能输入的值')
     for i in range(16):
         stat_list = []
