@@ -300,7 +300,7 @@ class DES():
     
     def run(self, key, text, action = ENCRYPT, padding = True):
         if len(key) < 8:
-            raise 'Key Should be 8 bytes long'
+            raise('Key Should be 8 bytes long')
         elif len(key) > 8:
             key = key[ :8] #如果key大于8个字符，取前面8个字符
         
@@ -336,12 +336,12 @@ class DES():
         if padding and action == DECRYPT:
             return self.removePadding(final_res)
         else:
-            return final_res
+            return final_res.encode('utf-8')
     
     #统计改变位数的加密函数
     def stat_run(self, arr_key, arr_text, action = ENCRYPT, padding = False):
         if len(arr_key) < 64:
-            raise 'Key Should be 8 bytes long'
+            raise('Key Should be 8 bytes long')
         elif len(arr_key) > 64:
             key = arr_key[ :64] #如果key大于8个字符，取前面8个字符
         
@@ -440,7 +440,9 @@ class DES():
 
 if __name__ == '__main__':
     text = 'testtest'
+    key = 'password'
     #text_statist_main()
-    key_statist_main()
+    #key_statist_main()
     #io_diff_main(0b000001)
-    
+    des = DES()
+    print(print(des.encrypt(key, text)))
