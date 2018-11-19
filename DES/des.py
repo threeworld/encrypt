@@ -219,7 +219,7 @@ def text_change_statist(arr_text, arr_key):
             res = change_arr_number(arr_text, i)
             arr2 = des.stat_run(arr_key, res, ENCRYPT)
             count += find_diff(arr1, arr2)
-        print(str(i)+ '\t\t\t'+ str((count/100)))
+        print(str(i)+ '\t\t\t\t'+ str((count/100)))
         
 
 #测试主函数
@@ -247,7 +247,7 @@ def key_change_statist(arr_text, arr_key):
             #密钥改变时生成的密文
             arr2 = des.stat_run(arr_key, arr_text, ENCRYPT)
             count += find_diff(arr1, arr2)
-        print(str(i)+ '\t\t\t'+ str((count/100)))
+        print(str(i)+ '\t\t\t\t'+ str((count/100)))
 
 #测试主函数
 def key_statist_main():
@@ -443,6 +443,6 @@ if __name__ == '__main__':
     key = 'password'
     #text_statist_main()
     #key_statist_main()
-    #io_diff_main(0b000001)
+    io_diff_main(0b000001)
     des = DES()
-    print(print(des.encrypt(key, text)))
+    print(base64.b64encode(des.encrypt(key, text)))
